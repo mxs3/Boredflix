@@ -1,32 +1,38 @@
-async function search(query) {
-  const url = `https://mapple.tv/api/search?q=${encodeURIComponent(query)}`;
+async function searchResults(keyword) {
+  const headers = {
+    accept: "application/json",
+    referer: "https://mappletv.uk",
+    "x-requested-with": "XMLHttpRequest",
+    "content-type": "application/json",
+  };
 
-  const res = await soraFetch(url, {
-    headers: {
-      "Accept": "application/json",
-      "Referer": "https://mapple.tv",
-      "Origin": "https://mapple.tv",
-      "X-Requested-With": "XMLHttpRequest",
-      "Content-Type": "application/json",
-      "Accept-Language": "en-US,en;q=0.9",
-      "Cache-Control": "no-cache"
-    }
+  const response = await fetch(`https://mappletv.uk/api/search?query=${encodeURIComponent(keyword)}`, {
+    method: "GET",
+    headers,
   });
 
-  const data = await res.json();
+  const json = await response.json();
 
-  if (!data.items || !Array.isArray(data.items)) return [];
+  if (!json?.items?.length) return JSON.stringify([]);
 
-  return data.items.map(item => ({
-    id: item.id.toString(),
-    title: item.title,
-    url: `/mapple/${item.id}`,
-    poster: `https://image.tmdb.org/t/p/w342${new URL(item.poster).pathname}`,  // البوستر المتوافق مع سورا
-    year: item.release_date?.split("-")[0] || "",
-    quality: item.highest_quality || "",
-    rating: item.rating?.toString() || "",
-    type: item.is_tv ? "tv" : "movie"
-  }));
+  const results = json.items.map((item) => {
+    const title = item.title;
+    const image = item.poster;
+    const tmdb_id = item.id;
+    const isTV = item.is_tv;
+
+    let href = isTV
+      ? `https://mappletv.uk/watch/tv/${tmdb_id}-1-1?autoPlay=true`
+      : `https://mappletv.uk/watch/movie/${tmdb_id}?autoPlay=true`;
+
+    return {
+      title,
+      image,
+      href,
+    };
+  });
+
+  return JSON.stringify(results);
 }
 
 // ✅ فك ترميز HTML
