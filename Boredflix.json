@@ -11,7 +11,7 @@
   "quality": "Auto",
   "baseUrl": "https://boredflix.com/",
   "searchBaseUrl": "https://api.themoviedb.org/3/search/multi?query=%s&include_adult=false&language=en-US&page=1&api_key=f545e0c7b78f5294a6316e4a1a467b45",
-  "scriptUrl": "https://raw.githubusercontent.com/50n50/sources/main/boredflix/boredflix.js",
+  "scriptUrl": "https://raw.githubusercontent.com/mxs3/Boredflix/refs/heads/main/Boredflix.js",
   "streamAsyncJS": true,
   "type": "movies/shows"
 }
