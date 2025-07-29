@@ -12,22 +12,29 @@ async function searchResults(keyword) {
   const json = await response.json();
 
   for (const item of json.items) {
-    // بدال ما نستخدم JSON.stringify جوا href مباشرة، نستخدم Base64 لتجنّب الأخطاء
-    const hrefObject = {
-      id: item.id,
-      type: item.is_tv ? 'tv' : 'movie',
-      season: item.season_number || 1,
-      episode: item.episode_number || 1
-    };
+    const isTV = item.is_tv === true;
 
-    const encodedHref = btoa(JSON.stringify(hrefObject));  // encode href safely
+    const href = isTV
+      ? `tv|${item.id}|${item.season_number || 1}|${item.episode_number || 1}`
+      : `movie|${item.id}`;
 
     results.push({
       title: item.title,
       image: item.poster,
-      href: encodedHref
+      href: href
     });
   }
 
   return JSON.stringify(results);
+}
+
+// ✅ فك ترميز HTML
+function decodeHTMLEntities(text) {
+  return text
+    .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(dec))
+    .replace(/&quot;/g, '"')
+    .replace(/&amp;/g, '&')
+    .replace(/&apos;/g, "'")
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>');
 }
