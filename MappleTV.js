@@ -1,46 +1,35 @@
 async function searchResults(keyword) {
-  try {
-    const url = `https://mappletv.uk/search?q=${encodeURIComponent(keyword)}`;
-    const res = await fetchv2(url, {
-      headers: {
-        'User-Agent': 'Mozilla/5.0',
-        'Referer': 'https://mappletv.uk/'
-      }
-    });
+  const results = [];
+  const url = `https://mappletv.uk/api/4k_media?search=${encodeURIComponent(keyword)}&mediaType=tv,movie&page=1&perPage=30`;
 
-    const html = await res.text();
-    const results = [];
-
-    const items = html.split('class="card"');
-    for (const item of items) {
-      const hrefMatch = item.match(/href="\/details\/(movie|tv)\/(\d+)"/);
-      const imgMatch = item.match(/<img[^>]+src="([^"]+)"[^>]*>/);
-      const titleMatch = item.match(/class="card-title"[^>]*>\s*([^<]+)/);
-
-      if (hrefMatch && imgMatch && titleMatch) {
-        const type = hrefMatch[1]; // movie أو tv
-        const id = hrefMatch[2];
-        const embedUrl = type === 'movie'
-          ? `https://mappletv.uk/watch/movie/${id}?autoPlay=true`
-          : `https://mappletv.uk/watch/tv/${id}-1-1?autoPlay=true`;
-
-        results.push({
-          title: decodeHTMLEntities(titleMatch[1]),
-          href: embedUrl,
-          image: imgMatch[1],
-          type
-        });
-      }
+  const response = await fetchv2(url, {
+    headers: {
+      'Accept': 'application/json',
+      'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X)',
+      'Referer': 'https://mappletv.uk',
+      'Origin': 'https://mappletv.uk'
     }
+  });
 
-    if (results.length === 0) {
-      return JSON.stringify([{ title: 'No results found', href: '', image: '' }]);
-    }
-
-    return JSON.stringify(results);
-  } catch (err) {
-    return JSON.stringify([{ title: 'Error', href: '', image: '', error: err.message }]);
+  const json = await response.json();
+  if (!json || !Array.isArray(json.items)) {
+    return JSON.stringify([]);
   }
+
+  for (const item of json.items) {
+    const isTV = item.is_tv === true;
+    const href = isTV
+      ? `tv|${item.id}|${item.season_number || 1}|${item.episode_number || 1}`
+      : `movie|${item.id}`;
+
+    results.push({
+      title: item.title,
+      image: item.poster,
+      href
+    });
+  }
+
+  return JSON.stringify(results);
 }
 
 // ✅ فك ترميز HTML
