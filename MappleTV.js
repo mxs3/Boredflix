@@ -1,35 +1,32 @@
-async function searchResults(keyword) {
-  const results = [];
-  const url = `https://mappletv.uk/api/4k_media?search=${encodeURIComponent(keyword)}&mediaType=tv,movie&page=1&perPage=30`;
+async function search(query) {
+  const url = `https://mapple.tv/api/search?q=${encodeURIComponent(query)}`;
 
-  const response = await fetchv2(url, {
+  const res = await soraFetch(url, {
     headers: {
-      'Accept': 'application/json',
-      'User-Agent': 'Mozilla/5.0 (iPhone; CPU iPhone OS 16_0 like Mac OS X)',
-      'Referer': 'https://mappletv.uk',
-      'Origin': 'https://mappletv.uk'
+      "Accept": "application/json",
+      "Referer": "https://mapple.tv",
+      "Origin": "https://mapple.tv",
+      "X-Requested-With": "XMLHttpRequest",
+      "Content-Type": "application/json",
+      "Accept-Language": "en-US,en;q=0.9",
+      "Cache-Control": "no-cache"
     }
   });
 
-  const json = await response.json();
-  if (!json || !Array.isArray(json.items)) {
-    return JSON.stringify([]);
-  }
+  const data = await res.json();
 
-  for (const item of json.items) {
-    const isTV = item.is_tv === true;
-    const href = isTV
-      ? `tv|${item.id}|${item.season_number || 1}|${item.episode_number || 1}`
-      : `movie|${item.id}`;
+  if (!data.items || !Array.isArray(data.items)) return [];
 
-    results.push({
-      title: item.title,
-      image: item.poster,
-      href
-    });
-  }
-
-  return JSON.stringify(results);
+  return data.items.map(item => ({
+    id: item.id.toString(),
+    title: item.title,
+    url: `/mapple/${item.id}`,
+    poster: `https://image.tmdb.org/t/p/w342${new URL(item.poster).pathname}`,  // البوستر المتوافق مع سورا
+    year: item.release_date?.split("-")[0] || "",
+    quality: item.highest_quality || "",
+    rating: item.rating?.toString() || "",
+    type: item.is_tv ? "tv" : "movie"
+  }));
 }
 
 // ✅ فك ترميز HTML
