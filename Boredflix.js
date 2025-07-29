@@ -1,38 +1,25 @@
 async function searchResults(keyword) {
-  const headers = {
-    accept: "application/json",
-    referer: "https://mappletv.uk",
-    "x-requested-with": "XMLHttpRequest",
-    "content-type": "application/json",
-  };
+  const apiKey = "f545e0c7b78f5294a6316e4a1a467b45"; // مفتاح TMDB الظاهر
+  const url = `https://api.themoviedb.org/3/search/multi?query=${encodeURIComponent(keyword)}&include_adult=false&language=en-US&page=1&api_key=${apiKey}`;
 
-  const response = await fetch(`https://mappletv.uk/api/search?query=${encodeURIComponent(keyword)}`, {
-    method: "GET",
-    headers,
-  });
+  try {
+    const res = await fetch(url);
+    const data = await res.json();
 
-  const json = await response.json();
+    const results = (data.results || [])
+      .filter(item => item.media_type === "movie" || item.media_type === "tv")
+      .map(item => ({
+        title: item.title || item.name || "Untitled",
+        image: item.poster_path
+          ? `https://image.tmdb.org/t/p/w500${item.poster_path}`
+          : "",
+        href: `https://boredflix.com/watch/${item.media_type}/${item.id}`
+      }));
 
-  if (!json?.items?.length) return JSON.stringify([]);
-
-  const results = json.items.map((item) => {
-    const title = item.title;
-    const image = item.poster;
-    const tmdb_id = item.id;
-    const isTV = item.is_tv;
-
-    let href = isTV
-      ? `https://mappletv.uk/watch/tv/${tmdb_id}-1-1?autoPlay=true`
-      : `https://mappletv.uk/watch/movie/${tmdb_id}?autoPlay=true`;
-
-    return {
-      title,
-      image,
-      href,
-    };
-  });
-
-  return JSON.stringify(results);
+    return JSON.stringify(results);
+  } catch (err) {
+    return JSON.stringify([{ title: "Error loading results", image: "", href: "" }]);
+  }
 }
 
 // ✅ فك ترميز HTML
