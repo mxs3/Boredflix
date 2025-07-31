@@ -9,8 +9,8 @@
   "language": "ARABIC",
   "streamType": "Hls",
   "quality": "Auto",
-  "baseUrl": "https://boredflix.com/",
-  "searchBaseUrl": "https://api.themoviedb.org/3/search/multi?query=%s&include_adult=false&language=en-US&page=1&api_key=f545e0c7b78f5294a6316e4a1a467b45",
+  "baseUrl": "https://kaa.to/",
+  "searchBaseUrl": "https://kaa.to/api/search",
   "scriptUrl": "https://raw.githubusercontent.com/mxs3/KAA/refs/heads/main/KAA.js",
   "streamAsyncJS": true,
   "type": "movies/shows"
