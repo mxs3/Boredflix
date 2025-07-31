@@ -12,30 +12,22 @@ async function searchResults(keyword) {
     body: JSON.stringify({ query: keyword }),
   });
 
-  const results = await response.json();
+  const data = await response.json();
+  const results = [];
 
-  if (!Array.isArray(results)) return [];
-
-  return results.map((item) => {
+  for (const item of data) {
+    const id = item.slug;
     const image = `https://img.kaa.to/posters/${item.poster?.hq}.webp`;
+    const rawTitle = item.title_en || item.title;
+    const title = cleanTitle(rawTitle);
+    results.push({ id, title, image });
+  }
 
-    return {
-      id: item.slug,
-      title: item.title_en || item.title,
-      altTitle: item.title,
-      image,
-      year: item.year,
-    };
-  });
+  console.log(results);
+  return JSON.stringify(results);
 }
 
-// ✅ فك ترميز HTML
-function decodeHTMLEntities(text) {
-  return text
-    .replace(/&#(\d+);/g, (_, dec) => String.fromCharCode(dec))
-    .replace(/&quot;/g, '"')
-    .replace(/&amp;/g, '&')
-    .replace(/&apos;/g, "'")
-    .replace(/&lt;/g, '<')
-    .replace(/&gt;/g, '>');
+// دالة بسيطة لتنظيف العنوان من أي رموز زيادة (لو عايز تعدلها حسب مزاجك)
+function cleanTitle(title) {
+  return title?.replace(/[\u200B-\u200D\uFEFF]/g, "").trim();
 }
