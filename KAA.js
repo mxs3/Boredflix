@@ -1,27 +1,32 @@
 async function searchResults(keyword) {
-    try {
-        const results = [];
-        const headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/127.0.0.0 Safari/537.36',
-            'Accept': 'application/json',
-            'Referer': 'https://kaa.to/' // لو الموقع بيطلب Referer
-        };
-        const response = await fetchv2(`https://kaa.to/api/search?q=${encodeURIComponent(keyword)}`, { headers });
-        const data = await response.json();
+  const url = "https://kaa.to/api/search";
 
-        data.forEach(item => {
-            results.push({
-                title: item.title?.trim() || 'N/A',
-                image: item.poster?.hq ? `https://kaa.to/posters/${item.poster.hq}` : 'N/A',
-                href: item.slug ? `/anime/${item.slug}` : 'N/A'
-            });
-        });
+  const response = await soraFetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1",
+      "Origin": "https://kaa.to",
+      "Referer": "https://kaa.to/",
+    },
+    body: JSON.stringify({ query: keyword }),
+  });
 
-        return JSON.stringify(results);
-    } catch (error) {
-        console.error('Error in searchResults:', error);
-        return JSON.stringify([]);
-    }
+  const results = await response.json();
+
+  if (!Array.isArray(results)) return [];
+
+  return results.map((item) => {
+    const image = `https://img.kaa.to/posters/${item.poster?.hq}.webp`;
+
+    return {
+      id: item.slug,
+      title: item.title_en || item.title,
+      altTitle: item.title,
+      image,
+      year: item.year,
+    };
+  });
 }
 
 // ✅ فك ترميز HTML
