@@ -7,7 +7,7 @@ async function searchResults(keyword) {
       "Content-Type": "application/json",
       "Origin": "https://kaa.to",
       "Referer": "https://kaa.to/",
-      "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X)",
+      "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 18_5 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.5 Mobile/15E148 Safari/604.1",
     },
     body: JSON.stringify({ query: keyword }),
   });
@@ -23,5 +23,6 @@ async function searchResults(keyword) {
     results.push({ id, title, image });
   }
 
+  console.log(results);
   return JSON.stringify(results);
 }
